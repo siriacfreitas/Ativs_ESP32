@@ -1,32 +1,56 @@
-# _Sample project_
+# Projeto 06: Contador de Pulsos com Display MAX7219
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Este repositório contém o código-fonte para o Projeto 06, que implementa um contador de pulsos utilizando um pushbutton e exibe o resultado em uma matriz de LED 8x8 controlada pelo driver MAX7219.
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+## Questão Proposta
+Disciplina: EGM0029 - Sistemas Embarcados para Controle e Automação
 
+Período: 2025.2 Projeto: 03
+> "1- Elabore um código fonte para implementar a contagem de pulsos em uma entrada digital e exibir o valor da contagem em uma matriz LED 8×8, a qual será controlada através do CI MAX7219 (ver datasheet). A contagem será sempre crescente, de uma unidade e limitada entre 0 e 9 em formato de anel, ou seja, ao se incrementar o valor 9, o próximo valor será o 0. Para incrementar o valor da contagem será utilizado um pushbutton."
+> 
 
+## Visão Geral
 
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
+O projeto utiliza o microcontrolador ESP32 para ler a entrada de um pushbutton através do periférico de hardware **Pulse Counter (PCNT)**, garantindo uma detecção de pulso eficiente e livre de *bouncing* (tremulação) por software. Cada vez que o botão é pressionado, a contagem é incrementada. O valor atual da contagem (de 0 a 9) é então exibido como um grande caractere numérico em um display de matriz de LED 8x8.
 
-## Example folder contents
+## Funcionalidades
 
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
+  - Contagem cíclica de 0 a 9.
+  - Incremento da contagem a cada pulso de um pushbutton.
+  - Lógica de "anel" (wrap-around): após o 9, a contagem retorna para 0.
+  - Exibição visual do dígito em uma matriz de LED 8x8.
+  - Interface com o driver MAX7219 via comunicação SPI.
+  - Uso do periférico PCNT do ESP32 para uma contagem de pulsos robusta.
 
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
+## Hardware Necessário
 
-Below is short explanation of remaining files in the project folder.
+  - 1x Placa de Desenvolvimento ESP32
+  - 1x Módulo de Matriz LED 8x8 com MAX7219
+  - 1x Pushbutton (Botão de pulso)
+  - Jumpers para as conexões
 
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+## Conexões (Wiring)
+<div align="center">
+<img width="350" height="350" alt="Image" src="https://github.com/user-attachments/assets/de4eec54-5fcf-4f7a-a4ae-359ed5927b22" />
+</div>
+         
+As conexões entre o ESP32 e os componentes são as seguintes:
+
+| Módulo MAX7219 | Pino no ESP32 | Descrição              |
+| :------------- | :------------ | :--------------------- |
+| `VCC`          | `5V` ou `3V3` | Alimentação            |
+| `GND`          | `GND`         | Terra                  |
+| `DIN`          | `GPIO 12`     | Dados SPI (MOSI)       |
+| `CS`           | `GPIO 10`     | Chip Select (LOAD)     |
+| `CLK`          | `GPIO 11`     | Clock SPI (SCLK)       |
+
+| Componente | Pino no ESP32 | Descrição                                  |
+| :--------- | :------------ | :----------------------------------------- |
+| Pushbutton | `GPIO 5`      | Entrada do sinal (a outra perna vai no GND) |
+
+## Estrutura do Código
+
+  - `main/main.c`: Contém a lógica principal da aplicação (`app_main`), a configuração do periférico PCNT para ler o botão e o loop que atualiza o display.
+  - `main/max7219.c`: Contém as funções de baixo nível para controlar o display MAX7219, como a inicialização do SPI, o envio de dados e a configuração dos registradores.
+  - `main/max7219.h`: Arquivo de cabeçalho com as definições de pinos, mapa de registradores, a "fonte" (bitmap) dos dígitos e os protótipos das funções do driver do display.
+  - `main/CMakeLists.txt`: Arquivo de configuração do build que informa ao sistema quais arquivos-fonte (`.c`) devem ser compilados.
