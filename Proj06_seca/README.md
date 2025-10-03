@@ -31,7 +31,7 @@ O projeto utiliza o microcontrolador ESP32 para ler a entrada de um pushbutton a
   - Jumpers para as conexões
 
 ## Conexões (Wiring)
-<div align="center">
+<div>
 <img width="350" height="350" alt="Image" src="https://github.com/user-attachments/assets/de4eec54-5fcf-4f7a-a4ae-359ed5927b22" />
 </div>
          
