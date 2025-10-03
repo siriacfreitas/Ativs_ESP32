@@ -3,9 +3,10 @@
 Este repositório contém o código-fonte para o Projeto 06, que implementa um contador de pulsos utilizando um pushbutton e exibe o resultado em uma matriz de LED 8x8 controlada pelo driver MAX7219.
 
 ## Questão Proposta
-Disciplina: EGM0029 - Sistemas Embarcados para Controle e Automação
 
-Período: 2025.2 Projeto: 03
+**Disciplina:** EGM0029 - Sistemas Embarcados para Controle e Automação  
+**Período:** 2025.2  
+**Projeto:** 03
 > "1- Elabore um código fonte para implementar a contagem de pulsos em uma entrada digital e exibir o valor da contagem em uma matriz LED 8×8, a qual será controlada através do CI MAX7219 (ver datasheet). A contagem será sempre crescente, de uma unidade e limitada entre 0 e 9 em formato de anel, ou seja, ao se incrementar o valor 9, o próximo valor será o 0. Para incrementar o valor da contagem será utilizado um pushbutton."
 > 
 
