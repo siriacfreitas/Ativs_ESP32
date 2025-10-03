@@ -18,6 +18,8 @@
   ],
   "files.associations": {
     "freertos.h": "c",
-    "task.h": "c"
+    "task.h": "c",
+    "stdio.h": "c",
+    "spi_master.h": "c"
   }
 }

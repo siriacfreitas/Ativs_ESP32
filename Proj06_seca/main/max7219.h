@@ -1,33 +1,46 @@
-#ifdef MAX7219_H
+// --- Guarda de Inclusão (Header Guard) ---
+// Evita que este arquivo seja incluído mais de uma vez durante a compilação,
+// o que causaria erros de redefinição.
 #ifndef MAX7219_H
-
 #define MAX7219_H
 
+#include <stdio.h>
+#include "freertos/FreeRTOS.h" // Sistema operacional de tempo real
+#include "freertos/task.h"     // Gerenciamento de tarefas
+#include "driver/spi_master.h" // Comunicação SPI para o display
+#include "driver/gpio.h"       // Controle dos pinos de entrada/saída
+#include "esp_err.h"           // Tratamento de erros do ESP-IDF
 
-// === Pinos do MAX7219 ===
-#define MAX7219_DIN   GPIO_NUM_12
-#define MAX7219_CLK   GPIO_NUM_11
-#define MAX7219_CS    GPIO_NUM_10
+// --- Definição dos Pinos ---
+// Mapeia as conexões físicas do MAX7219 aos pinos GPIO do ESP32.
+#define MAX7219_DIN   GPIO_NUM_12 // Pino de Dados (Data In)
+#define MAX7219_CLK   GPIO_NUM_11 // Pino de Clock (Clock)
+#define MAX7219_CS    GPIO_NUM_10 // Pino de Seleção (Chip Select / Load)
 
-static spi_device_handle_t  SpiDeviceHandle;
-// Table 2. Register Address Map do MAX7219
+
+// --- Mapa de Registradores do MAX7219 ---
+// Enumeração que associa nomes legíveis aos endereços dos registradores,
+// conforme o datasheet do componente.
 enum {
-  REG_NOOP        = 0x00,
-  REG_DIGIT0      = 0x01,
-  REG_DIGIT1      = 0x02,
-  REG_DIGIT2      = 0x03,
-  REG_DIGIT3      = 0x04,
-  REG_DIGIT4      = 0x05,
-  REG_DIGIT5      = 0x06,
-  REG_DIGIT6      = 0x07,
-  REG_DIGIT7      = 0x08,
-  REG_DECODE_MODE = 0x09,
-  REG_INTENSITY   = 0x0A,
-  REG_SCAN_LIMIT  = 0x0B,
-  REG_SHUTDOWN    = 0x0C,
-  REG_DISPLAYTEST = 0x0F,
+  REG_NOOP        = 0x00, // Nenhuma operação
+  REG_DIGIT0      = 0x01, // Linha 0
+  REG_DIGIT1      = 0x02, // Linha 1
+  REG_DIGIT2      = 0x03, // Linha 2
+  REG_DIGIT3      = 0x04, // Linha 3
+  REG_DIGIT4      = 0x05, // Linha 4
+  REG_DIGIT5      = 0x06, // Linha 5
+  REG_DIGIT6      = 0x07, // Linha 6
+  REG_DIGIT7      = 0x08, // Linha 7
+  REG_DECODE_MODE = 0x09, // Modo de decodificação
+  REG_INTENSITY   = 0x0A, // Intensidade do brilho
+  REG_SCAN_LIMIT  = 0x0B, // Limite de varredura (quantas linhas usar)
+  REG_SHUTDOWN    = 0x0C, // Modo de desligamento/baixo consumo
+  REG_DISPLAYTEST = 0x0F, // Modo de teste do display
 };
 
+// --- Fonte de Caracteres (Bitmap) 8x8 ---
+// Matriz que contém os padrões de bytes para desenhar os dígitos de 0 a 9.
+// Cada byte representa uma linha de 8 LEDs.
 static const uint8_t DIGITS_8x8[10][8] = {
     // 0
     {0x3C, 0x42, 0x62, 0x52, 0x4A, 0x46, 0x42, 0x3C},
@@ -51,10 +64,12 @@ static const uint8_t DIGITS_8x8[10][8] = {
     {0x3C, 0x42, 0x42, 0x42, 0x7C, 0x40, 0x20, 0x1C}
 };
 
-static void max7219_spi_init(void);
-static inline esp_err_t max7219_write(uint8_t reg, uint8_t val);
-static void max7219_init_chip(void);
-static inline void set_line(uint8_t line_idx, bool on);
+// --- Protótipos das Funções ---
+// Declara as funções que serão definidas no arquivo .c correspondente.
+void max7219_spi_init(void);
+esp_err_t max7219_write(uint8_t reg, uint8_t val);
+void max7219_init_chip(void);
+void set_line(uint8_t line_idx, bool on);
 void draw_digit(uint8_t d);
 
-#endif /*MAX7219_H*/
+#endif /* MAX7219_H */
