@@ -33,9 +33,9 @@ O valor atual da contagem é exibido em um display de 7 segmentos do tipo Ânodo
   - 1x Protoboard
 
 ## Esquema de Conexões
-\</div\>
+<div>
 <img width="350" height="350" alt="Image" src="https://github.com/user-attachments/assets/d4aa312b-9c71-4fda-b07e-2fa3ede7ae6e" />
-\</div\>
+<div>
 As conexões entre o ESP32 e o display são as seguintes:
 
 | Display (Segmento) | Pino no ESP32 |
