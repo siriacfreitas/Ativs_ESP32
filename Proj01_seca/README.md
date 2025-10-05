@@ -33,9 +33,9 @@ O valor atual da contagem é exibido em um display de 7 segmentos do tipo **Âno
 
 ## Esquema de Conexões
 
-\<div\>
+<div>
 <img width="350" height="350" alt="Image" src="https://github.com/user-attachments/assets/b29ed7ee-ad37-4379-9e93-1637aa2c799c" />
-\</div\>
+<div>
 As conexões entre o ESP32 e os componentes são as seguintes:
 
 | Display (Segmento) | Pino no ESP32 |
