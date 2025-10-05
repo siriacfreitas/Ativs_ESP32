@@ -49,9 +49,57 @@ As conexões entre o ESP32 e os componentes são as seguintes:
 | :--------- | :------------ | :----------------------------------------- |
 | Pushbutton | `GPIO 5`      | Entrada do sinal (a outra perna vai no GND) |
 
-## Estrutura do Código
 
-  - `main/main.c`: Contém a lógica principal da aplicação (`app_main`), a configuração do periférico PCNT para ler o botão e o loop que atualiza o display.
-  - `main/max7219.c`: Contém as funções de baixo nível para controlar o display MAX7219, como a inicialização do SPI, o envio de dados e a configuração dos registradores.
-  - `main/max7219.h`: Arquivo de cabeçalho com as definições de pinos, mapa de registradores, a "fonte" (bitmap) dos dígitos e os protótipos das funções do driver do display.
-  - `main/CMakeLists.txt`: Arquivo de configuração do build que informa ao sistema quais arquivos-fonte (`.c`) devem ser compilados.
+## Explicação do Código
+
+A arquitetura do software utiliza o periférico de hardware **Pulse Counter (PCNT)** do ESP32, uma abordagem robusta e eficiente para contar eventos externos sem sobrecarregar a CPU com interrupções constantes.
+
+#### 1\. Configuração do Pulse Counter (PCNT)
+
+Em vez de usar uma interrupção de GPIO padrão, o pino do botão é associado diretamente ao hardware do PCNT.
+
+```c
+// --- Configuração do canal do PCNT para monitorar o pino do botão ---
+pcnt_chan_config_t channel_config = {
+    .edge_gpio_num = BUTTON_PLUS, // Pino que gera o pulso
+    .level_gpio_num = -1,
+};
+pcnt_new_channel(pcnt_unit, &channel_config, &pcnt_channel);
+
+// --- Define a ação do contador ---
+pcnt_channel_set_edge_action(pcnt_channel, PCNT_CHANNEL_EDGE_ACTION_HOLD, PCNT_CHANNEL_EDGE_ACTION_INCREASE);
+```
+
+  - A configuração do canal (`pcnt_chan_config_t`) vincula o pino físico (`BUTTON_PLUS`) ao contador.
+  - A função `pcnt_channel_set_edge_action` é a chave: ela instrui o hardware a **incrementar o contador automaticamente** na borda de subida do sinal. Como o pino usa um resistor de *pull-up*, a borda de subida ocorre quando o botão é **solto**. Isso funciona como um excelente filtro de *debounce* em hardware.
+
+#### 2\. O Loop Principal e a Lógica de Polling
+
+O loop principal (`while(1)`) não precisa de *flags* ou interrupções complexas. Ele simplesmente "pergunta" ao periférico PCNT qual é a contagem atual.
+
+```c
+// Lê o valor atual do contador de hardware
+pcnt_unit_get_count(pcnt_unit, &count);
+
+// Verifica se a contagem mudou (botão foi pressionado e solto)
+if (count != last_count) {
+    // Filtro: só age se a contagem aumentou
+    if (count > last_count) {
+        show = (show + 1) % 10; // Incrementa o dígito a ser exibido
+        draw_digit(show);       // Atualiza o display
+    }
+    // Zera a contagem para a próxima detecção
+    pcnt_unit_clear_count(pcnt_unit);
+    last_count = 0;
+}
+```
+
+  - A cada 100ms (definido pelo `vTaskDelay`), o código lê o contador de hardware com `pcnt_unit_get_count`.
+  - Se o valor (`count`) for maior que o último valor lido (`last_count`), o programa entende que um pulso válido ocorreu.
+  - A variável de exibição (`show`) é então incrementada, o display é atualizado com `draw_digit(show)`, e o contador de hardware é **zerado** com `pcnt_unit_clear_count`, deixando-o pronto para detectar o próximo pulso.
+
+#### 3\. Controle do Display (MAX7219)
+
+As funções `max7219_spi_init()` e `max7219_init_chip()` preparam a comunicação SPI e configuram o display. A função `draw_digit(show)` é a responsável por enviar, via SPI, o padrão de bits (bitmap) do número `show` para o display, que então o renderiza na matriz 8x8.
+
+Esta abordagem com PCNT é muito eficiente, pois delega a tarefa de contar e filtrar os pulsos do botão para um hardware dedicado, liberando a CPU para outras tarefas (como, neste caso, atualizar o display).
