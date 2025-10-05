@@ -1,0 +1,16 @@
+Leitura do encoder:
+- motor : 165 rpm
+
+- aplicando 6V na endrada : periodo de 0.96 ms (periodo é o tempo do laser do encoder passar de um furo para outro)
+- aplicando 5V na entrada : preiodo de 1.17 ms 
+- aplicando 4V na entrada : preiodo de 1.48 ms
+- aplicando 3V na entrada : preiodo de 2.00 ms
+- aplicando 2V na entrada : preiodo de 3.20 ms
+- aplicando 1V na entrada : preiodo de 7.60 ms
+
+- caixa 35 
+
+calculo:
+165/60 = 2,75 voltas/seg
+2,75/35= 0,078 
+78 voltas no discos

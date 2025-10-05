@@ -1,0 +1,75 @@
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <driver/gpio.h>
+#include <stdio.h>
+#include <driver/pulse_cnt.h>
+
+#define Kc  2.075
+#define Ki  1.06
+#define Kp 8
+#define passo_integrador 0.001
+#define Gdac 77.2727 // 255/3,3 
+#define Gadc 0.013 // 3,3/255 
+int e0=0,ei=0;
+float integrador=0.0,referencia=0.5;
+
+int count = 0;
+int count_ant =0;
+int delta =0;
+int resposta=0;
+int pulso_ok=0;
+
+void dac_set(uint8_t ei);
+void dac_R2R_init();
+
+
+
+void app_main() {
+
+    pcnt_unit_config_t unit_config = {
+        .high_limit = 10000, 
+        .low_limit = -10000,
+    };
+    pcnt_unit_handle_t pcnt_unit = NULL;
+    pcnt_new_unit(&unit_config, &pcnt_unit);
+
+    pcnt_chan_config_t channel_config = {
+        .edge_gpio_num = GPIO_NUM_47,
+        .level_gpio_num = GPIO_NUM_48,
+    };
+    pcnt_channel_handle_t pcnt_channel = NULL;
+    pcnt_new_channel(pcnt_unit, &channel_config, &pcnt_channel);
+
+    pcnt_channel_set_edge_action(pcnt_channel, PCNT_CHANNEL_EDGE_ACTION_HOLD, PCNT_CHANNEL_EDGE_ACTION_INCREASE);
+
+    pcnt_unit_enable(pcnt_unit);
+    pcnt_unit_clear_count(pcnt_unit);
+    pcnt_unit_start(pcnt_unit); 
+
+ 
+    dac_R2R_init();
+
+    for(;;){
+        pcnt_unit_get_count(pcnt_unit, &count);
+        delta = count - count_ant;
+        resposta = (abs(delta))*Kp;
+        dac_set(resposta);
+        printf("%d\n",resposta);
+        count_ant = count;
+        count =0;
+        vTaskDelay(30 / portTICK_PERIOD_MS); 
+    }
+}
+
+
+void dac_R2R_init(){
+    for(int i = 4; i < 12; i++){
+        gpio_set_direction(i, GPIO_MODE_OUTPUT);  
+    }
+}
+
+void dac_set(uint8_t ei){
+    for(int i =0; i < 8; i++){
+        gpio_set_level(i+4, (1<<(i) & ei)>>i); 
+    }
+}
